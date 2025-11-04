@@ -5,11 +5,11 @@
 # Step 1: Calculate PSI per event
 suppa.py psiPerEvent -i "./model.ioe" -e "./suppa_expression.txt" -o events
 
-# Step 2: Create subset files for the "Old" group
+# Step 2: Create subset files for the "60-70" group
 cut -f 1-11 ./events.psi > ./60_70.psi
 cut -f 1-11 ./suppa_expression.txt > ./60_70.tpm
 
-# Step 3: Create subset files for the "Young" group
+# Step 3: Create subset files for the "30-40" group
 cut -f 1,12-20 ./events.psi > ./30_40.psi
 cut -f 1,12-20 ./suppa_expression.txt > ./30_40.tpm
 
