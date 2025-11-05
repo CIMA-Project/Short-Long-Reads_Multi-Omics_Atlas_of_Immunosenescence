@@ -52,6 +52,14 @@ sce_combined_tcr <- combineExpression(combined.TCR,
                          proportion = FALSE, 
                         cloneSize=c("1"=1, "2"=2, "3"=3, "4"=4, "5"=5,"6-10"=10,">10"=100))
 sce_combined_tcr$sample <- sub("_.*$", "", colnames(sce_combined_tcr))
+tcr_cells_info <- sce_combined_tcr@meta.data %>%
+  dplyr::select(L3_celltype)%>%
+  mutate(barcode=rownames(.))
+combined_tcr_df <- bind_rows(combined.TCR, .id = "sample")
+combined.TCR <- combined_tcr_df %>%
+  merge(tcr_cells_info, by ="barcode")%>%
+  filter(!is.na(L3_celltype))%>%
+ split(.,.$sample)
 saveRDS(sce_combined_tcr,"ASLM/TCR/GEX_TCR.rds",compress='bzip2')
 saveRDS(combined.TCR,"ASLM/TCR/TCR.rds",compress='bzip2')
 
