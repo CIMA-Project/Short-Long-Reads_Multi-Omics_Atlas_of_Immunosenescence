@@ -43,10 +43,10 @@ adata.var['gene_name'] = pd.Series(
     adata.var_names, index=adata.var_names
 ).map(transcript_id_to_name)
 
-mito_mask_index = ~adata.var_names.str.contains("chrM", case=False, na=False)
-ribo_mask = ~adata.var["gene_name"].astype(str).fillna("").str.strip().str.upper().str.startswith(("RPS", "RPL"))
-final_filter = mito_mask_index & ribo_mask
-adata = adata[:, final_filter].copy()
+# mito_mask_index = ~adata.var_names.str.contains("chrM", case=False, na=False)
+# ribo_mask = ~adata.var["gene_name"].astype(str).fillna("").str.strip().str.upper().str.startswith(("RPS", "RPL"))
+# final_filter = mito_mask_index & ribo_mask
+# adata = adata[:, final_filter].copy()
 keep_categories = ["full-splice_match", "novel_not_in_catalog", "incomplete-splice_match", "novel_in_catalog"]
 adata = adata[:, adata.var["structural_category"].isin(keep_categories)]
 adata.var['mt'] = adata.var['gene_name'].str.startswith('MT-')
@@ -76,5 +76,6 @@ mapping_df = sr_adata.obs[["celltype", "L2_celltype", "L3_celltype"]].copy()
 common_cells = adata.obs_names.intersection(mapping_df.index)
 adata = adata[common_cells].copy()
 adata.obs[["celltype", "L2_celltype", "L3_celltype"]] = mapping_df.loc[common_cells]
+
 
 adata.write('./data_lr.h5ad',compression='gzip')
