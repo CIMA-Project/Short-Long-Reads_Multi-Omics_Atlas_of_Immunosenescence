@@ -16,49 +16,33 @@ data_Startrac <- StartracDiversity(sce_combined_tcr,
 fwrite(data_Startrac,"ASLM/TCR/tcr_STARTRAC.csv")
 
 data_Startrac <- data_Startrac %>%
-  mutate(majorCluster = ifelse(str_detect(majorCluster, "CTL"), "CTL", majorCluster))
+  mutate(
+    majorCluster = ifelse(str_detect(majorCluster, "Regulatory"), "CD4 Treg", majorCluster),
+    expa = as.numeric(expa)  
+  )
+
+cell_type_order <- c("Naïve_T", "CD4 Treg", "Tcm", "Tem", "CTL", "Cycling T", "MAIT", "NKT", "gdT")
+data_Startrac <- data_Startrac %>%
+  mutate(majorCluster = factor(majorCluster, levels = cell_type_order))
 kw_res <- data_Startrac %>%
   kruskal_test(expa ~ majorCluster)
 dunn_res <- data_Startrac %>%
-  dunn_test(expa ~ majorCluster, p.adjust.method = "bonferroni")
-ctl_vs_naive <- dunn_res %>%
-  filter(group1 == "CTL" | group2 == "CTL") %>%
-  filter(group1 =="CD4 Naïve"| group1 == "CD8 Naïve")
-##Celltype startrac expansion score 
+  dunn_test(expa ~ majorCluster, p.adjust.method = "BH")
+
+
+naive_vs_other_expansion <- dunn_res %>%
+  filter((group1 == "Naïve_T" | group2 == "Naïve_T") & p.adj.signif != "ns")
+comparisons_list <- map2(naive_vs_other_expansion$group1, 
+                          naive_vs_other_expansion$group2, 
+                          ~c(.x, .y))
 y_max <- max(data_Startrac$expa, na.rm = TRUE)
-y_range <- y_max - min(data_Startrac$expa, na.rm = TRUE)
-y_positions <- y_max + 0.1 * y_range + (0:(nrow(ctl_vs_naive)-1)) * 0.08 * y_range
+y_positions <- y_max * (1.05 + 0.03 * (0:(nrow(naive_vs_other_expansion)-1)))
 pdf("ALSM/TCR/pdf/STARTRAC_celltype_TCR.pdf", width = 7.5, height = 5.5)
 ggplot(data_Startrac, aes(x = majorCluster, y = expa)) +
-  geom_boxplot(
-    fill = "#E64B35",        
-    color = "black",            
-    width = 0.6,               
-    outlier.shape = NA        
-  ) +
-  geom_jitter(
-    aes(fill = "#E64B35"),  
-    width = 0.15,
-    size = 3.5,
-    shape = 21,       
-    stroke = 0.6,    
-    color = "black",  
-    alpha = 0.9       
-  ) +
-  geom_signif(
-    comparisons = lapply(1:nrow(ctl_vs_naive), 
-                         function(i) c(ctl_vs_naive$group1[i], ctl_vs_naive$group2[i])),
-    annotations = ctl_vs_naive$p.adj.signif,
-    y_position = y_positions,
-    map_signif_level = FALSE, 
-    textsize = 4,             
-    vjust = 0.5                
-  ) +
-  labs(        
-    x = "",                     
-    y = "STARTRAC expansion score",
-    title = ""
-  ) +
+  geom_boxplot(fill = "#E64B35", color = "black", width = 0.6, outlier.shape = NA) +
+  geom_jitter(aes(fill = "#E64B35"), width = 0.15, size = 3.5, shape = 21, 
+              stroke = 0.6, color = "black", alpha = 0.9) +
+  labs(x = "", y = "STARTRAC expansion score", title = "") +
   theme_pubr() +               
   theme(
     plot.title = element_blank(), 
@@ -66,8 +50,16 @@ ggplot(data_Startrac, aes(x = majorCluster, y = expa)) +
     axis.text.y = element_text(size = 10),                             
     panel.background = element_rect(fill = "white"),
     legend.position = "none"
-  ) +
-  scale_y_continuous(expand = expansion(mult = c(0.05, 0.15)))
+  )+ 
+    geom_signif(
+      comparisons = comparisons_list,
+      annotations = naive_vs_other_expansion$p.adj.signif,
+      y_position = y_positions,
+      tip_length = 0.01,
+      textsize = 4,
+      vjust = 0.5
+    ) +
+    scale_y_continuous(expand = expansion(mult = c(0.05, 0.2)))
 dev.off()
 
 ## ------------------------------
