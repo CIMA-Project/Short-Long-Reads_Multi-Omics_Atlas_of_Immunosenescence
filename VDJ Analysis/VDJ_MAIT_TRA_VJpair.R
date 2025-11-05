@@ -36,8 +36,6 @@ circos.track(
     sector.index = get.cell.meta.data("sector.index")
     xlim = get.cell.meta.data("xlim")
     ylim = get.cell.meta.data("ylim")
-    
-    # 在扇区外部添加标签，沿圆周方向排列
     circos.text(
       x = mean(xlim), 
       y = ylim[2]*1.1 , 
