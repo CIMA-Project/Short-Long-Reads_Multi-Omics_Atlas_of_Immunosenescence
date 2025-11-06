@@ -1,4 +1,3 @@
-## thanks for helping : Yafei Yang
 ## ------------------------------
 library(scRepertoire)
 library(data.table)
