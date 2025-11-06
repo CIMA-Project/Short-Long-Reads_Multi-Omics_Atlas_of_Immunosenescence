@@ -1,0 +1,63 @@
+library(Seurat)
+library(ggplot2)
+library(dplyr)
+library(ggpubr)
+library(BiocParallel)
+
+register(MulticoreParam(workers = 8, progressbar = TRUE))
+pbmc <- readRDS("/data/RDS/Annotation/10_PBMC_annotation_L3.rds")
+IAGs <- readLines("/data/Files/GENE_SET/Immunosenescence-related genes (IAGs).txt")
+IAGs <- IAGs[IAGs != ""]
+pbmc <- AddModuleScore(
+  object = pbmc,
+  features = list(IAGs),
+  ctrl = 50,
+  name = "IAGs_Score",
+  slot = 'data'
+)
+score_col <- grep("^IAGs_Score", colnames(pbmc@meta.data), value = TRUE)
+plot_data <- pbmc@meta.data %>%
+  select(group, L3_celltype, score = all_of(score_col))
+
+#Figure2C: Boxplot of IAGs module score by L3 cell type and group
+box_plot <- ggplot(plot_data, aes(x = L3_celltype, y = score, fill = group)) +
+  geom_boxplot(
+    position = position_dodge(0.9),
+    alpha = 0.7,
+    outlier.shape = NA,
+    width = 0.7
+  ) +
+  stat_compare_means(
+    aes(group = group),
+    method = "wilcox.test",
+    label = "p.signif",
+    hide.ns = TRUE,
+    show.legend = FALSE,
+    label.y = max(plot_data$score, na.rm = TRUE) * 0.9
+  ) +
+  labs(
+    title = "Immunosenescence-related genes",
+    x = "Cell type (L3)",
+    y = "Module score",
+    fill = "Group"
+  ) +
+  scale_fill_manual(values = c("OLD" = "#E41A1C", "YOUNG" = "#377EB8")) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title       = element_text(face = "bold", size = 18, hjust = 0.5),
+    axis.text.x      = element_text(angle = 45, hjust = 1, size = 12),
+    axis.text.y      = element_text(size = 12),
+    axis.title       = element_text(face = "bold", size = 14),
+    legend.position  = "top",
+    legend.title     = element_text(face = "bold"),
+    legend.text      = element_text(size = 12),
+    panel.grid.major.x = element_blank(),
+    panel.border     = element_rect(color = "grey80", fill = NA, size = 0.5),
+    plot.background  = element_rect(fill = "white", color = NA)
+  )
+ggsave(
+  "/data/Figure/F2C_IAG_L3_celltype_between_group.pdf",
+  box_plot,
+  width = 16, height = 8, dpi = 300
+)
+print(box_plot)
