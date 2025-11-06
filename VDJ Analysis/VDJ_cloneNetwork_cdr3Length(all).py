@@ -28,16 +28,10 @@ for sample in samples:
 # 合并所有 AnnData
 adata_tcr = anndata.concat(adata_list, join="outer")
 print("合并完成：", adata_tcr.shape)
-##muon 容器
+##muon 
 mdata_tcr = mu.MuData({"gex": adata_t, "airr": adata_tcr})
 ir.pp.index_chains(mdata_tcr)
 ir.tl.chain_qc(mdata_tcr)
-
-print(mdata_tcr['airr'].obs['chain_pairing'].value_counts(),
-(mdata_tcr["airr"].obs["chain_pairing"]
-    .value_counts(normalize=True)          
-    .mul(100)                             
-    .round(6)))
 ##质控
 mu.pp.filter_obs(mdata_tcr['airr'], "chain_pairing", lambda x: ~np.isin(x, ["orphan VDJ","orphan VJ","ambiguous"]))
 ##TCR clonotype_network L3_celltype
