@@ -12,7 +12,7 @@ data_Startrac <- StartracDiversity(sce_combined_tcr,
                        chain = "both",
                        index = c("expa"),
                        exportTable = TRUE,
-                       group.by = "orig.ident")
+                       group.by = "sample")
 fwrite(data_Startrac,"ASLM/TCR/tcr_STARTRAC.csv")
 
 data_Startrac <- data_Startrac %>%
@@ -108,6 +108,9 @@ metadata =read.csv('ALSM/10vs10_metadata.csv')
 sce_combined_tcr_cd4tem <- readRDS("ASLM/TCR/long_read_tcr_gex.rds")
 startrac_cd4tem <- StartracDiversity(sce_combined_tcr_cd4tem, 
                   type = "type", 
+                  chain = "TRB",
+                  cloneCall = "aa",
+                  group.by = "sample",
                   exportTable = TRUE) %>% merge(.,metadata,by.x='group',by.y='sample')
 max_y <- max(startrac_cd4tem$expa, na.rm = TRUE) * 1.05
 line_y <- max_y - (max(startrac_cd4tem$expa) - min(startrac_cd4tem$expa)) * 0.02
