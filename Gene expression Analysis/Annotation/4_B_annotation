@@ -1,0 +1,62 @@
+library(Seurat)
+library(harmony)
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+library(dplyr)
+library(patchwork)
+library(R.utils)
+.cluster_cols <- c("#DC050C", "#FB8072", "#1965B0", "#7BAFDE", "#882E72",
+                   "#B17BA6", "#FF7F00", "#FDB462", "#E7298A", "#E78AC3",
+                   "#33A02C", "#B2DF8A", "#55A1B1", "#8DD3C7", "#A6761D",
+                   "#E6AB02", "#7570B3", "#BEAED4", "#666666", "#999999",
+                   "#aa8282", "#d4b7b7", "#8600bf", "#ba5ce3", "#808000",
+                   "#aeae5c", "#1e90ff", "#00bfff", "#56ff0d", "#ffff00")
+
+# Function for sub-clustering
+subcluster <- function(seurat_obj, dims_use, resolution, n_neigh = 30, min_dist = 0.5) {
+  seurat_obj <- NormalizeData(seurat_obj)
+  seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 2000)
+  seurat_obj <- ScaleData(seurat_obj)
+  seurat_obj <- RunPCA(seurat_obj, features = VariableFeatures(seurat_obj))
+  seurat_obj <- RunHarmony(seurat_obj, group.by.vars = "orig.ident", max_iter = 30) # nolint
+  seurat_obj <- FindNeighbors(seurat_obj, reduction = "harmony", dims = dims_use)
+  seurat_obj <- FindClusters(seurat_obj, resolution = resolution)
+  seurat_obj <- RunUMAP(seurat_obj, dims = dims_use, n.neighbors = n_neigh,
+                        min.dist = min_dist, reduction = "harmony")
+  return(seurat_obj)
+}
+
+# L2 B cell annotation
+pbmc <- readRDS("/data/RDS/Annotation/4_PBMC_annotation_L1.rds")
+B_cells <- subset(pbmc, subset = celltype == "B")
+B_cells <- subcluster(B_cells, dims_use = 1:7, resolution = 0.8)
+L2_B_marker <- c("CD19","MS4A1","NEIL1","CD9","CD24","TCL1A","SOX4","CD27",
+                 "IGHD","IL4R","FCER2","BACH2","IGHA1","SDC1","JCHAIN","XBP1","MZB1","TNFRSF17","ITGAX")
+FeaturePlot(B_cells, features = L2_B_marker, ncol = 4)
+B_cells <- RenameIdents(B_cells,
+                        '0' = "Memory B", '1' = "Naïve B", '2' = "Naïve B", '3' = "Memory B", 
+                        '4' = "Memory B", '5' = "Naïve B", '6' = "Naïve B", '7' = "Total Plasma")
+B_cells$L3_celltype <- Idents(B_cells)
+# L3：Memory B anotation
+MemB <- subset(B_cells, subset = L3_celltype == "Memory B")
+MemB <- subcluster(MemB, dims_use = 1:8, resolution = 1.0)
+FeaturePlot(MemB, features = c("ITGAX","FCRL5","IGHD","CD1C"), ncol = 4)
+MemB <- RenameIdents(MemB,
+                     '0' = "Swit. Bm", '1' = "Swit. Bm", '2' = "Unswit. Bm", '3' = "Unswit. Bm",
+                     '4' = "Swit. Bm", '5' = "Swit. Bm", '6' = "Swit. Bm", '7' = "Swit. Bm",
+                     '8' = "Unswit. Bm", '9' = "Unswit. Bm", '10' = "Swit. Bm")
+MemB$L3_celltype <- Idents(MemB)
+B_cells$L3_celltype[colnames(MemB)] <- MemB$L3_celltype
+# L3：Total Plasma anotation
+Plasma <- subset(B_cells, subset = L3_celltype == "Total Plasma")
+Plasma <- subcluster(Plasma, dims_use = 1:10, resolution = 0.7)
+L3_B_marker <- c("ITGAX","FCRL5","IGHD","CD1C","CD27","IGHG1","MME","CR2","CD27",
+                 "CCR7","IFIT3","ISG15","FCRL4","MKI67","HMGB2")
+FeaturePlot(Plasma, features = L3_B_marker, ncol = 4)
+Plasma <- RenameIdents(Plasma,
+                       '0' = "Plasma", '1' = "Plasma", '2' = "Plasma",
+                       '3' = "Plasma", '4' = "Plasmablast", '5' = "Plasma")
+Plasma$L3_celltype <- Idents(Plasma)
+B_cells$L3_celltype[colnames(Plasma)] <- Plasma$L3_celltype
+saveRDS(B_cells, "/data/RDS/Annotation/5_B_annotation.rds")
