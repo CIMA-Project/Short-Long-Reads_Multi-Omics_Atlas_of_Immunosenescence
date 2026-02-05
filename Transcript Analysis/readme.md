@@ -2,12 +2,13 @@
 
 ## Overview
 
-This pipeline performs comprehensive analysis of single-cell full-length transcriptome data, including preprocessing, metacell assignment, differential transcript usage, and differential splicing analysis. The workflow consists of four main components:
+This pipeline performs comprehensive analysis of single-cell full-length transcriptome data, including preprocessing, metacell assignment, differential transcript usage, and differential splicing analysis. The workflow consists of five main components:
 
 1. **Data Preprocessing** (`preprocess.py`)
 2. **Metacell Assignment** (`metacell.py`)
-3. **Differential Transcript Usage Analysis** (`Differential_Transcript_Usage.r` and `subset_pip.r`)
-4. **Differential Splicing Analysis** (`SUPPA.sh`)
+3. **Differential Transcript Usage Analysis** (`Differential_Transcript_Usage.r`)
+4. **Subset Analysis** (`subset_pip.r`)
+5. **Differential Splicing Analysis** (`SUPPA.sh`)
 
 ---
 
@@ -56,7 +57,7 @@ python metacell.py
 
 ### Input:
 
-* `./data_lr.h5ad` - Preprocessed AnnData object from Step 1
+* `./data_lr.h5ad` - Preprocessed AnnData object from Data Preprocessing
 
 ### Output:
 
