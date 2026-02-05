@@ -11,7 +11,7 @@ This pipeline performs comprehensive analysis of single-cell full-length transcr
 
 ---
 
-## Step 1: Data Preprocessing
+## Data Preprocessing
 
 ### Script: `preprocess.py`
 
@@ -46,7 +46,7 @@ python preprocess.py
 
 ---
 
-## Step 2: Metacell Assignment
+## Metacell Assignment
 
 ### Script: `metacell.py`
 
@@ -75,11 +75,9 @@ python metacell.py
 
 ---
 
-## Step 3: Differential Transcript Usage Analysis
+## Differential Transcript Usage Analysis
 
-### Option A: Full Analysis (All Cell Types)
-
-#### Script: `Differential_Transcript_Usage.r`
+### Script: `Differential_Transcript_Usage.r`
 
 
 ```r
@@ -104,31 +102,13 @@ Rscript Differential_Transcript_Usage.r
 ### Key Processing Steps:
 
 1. Aggregates isoform expression by sample and cell type
-2. Builds design matrix comparing young (Y) vs old (O) samples for each cell type
+2. Builds design matrix comparing 30-40 age group vs 60-70 age group samples for each cell type
 3. Imports data into IsoformSwitchAnalyzeR framework
 4. Predicts open reading frames (ORFs)
 5. Analyzes isoform switch consequences (TSS, TTS, UTR changes, ORF length, NMD status, etc.)
 6. Incorporates external functional annotations
 
-### Option B: Subset Analysis (Specific Cell Type)
-
-#### Script: `subset_pip.r`
-
-
-```r
-Rscript subset_pip.r
-```
-
-### Input:
-
-* `./data_lr.rds` - Full Seurat object
-* `./OUT.novel.transcript_models_corrected.fasta` - Transcript nucleotide sequences
-* `./CD4Tem.gtf` - Cell type-specific GTF file (needs to be prepared separately)
-
-### Output:
-
-* `./CD4Tem.rds` - Subset Seurat object for CD4 Tem cells
-* `./CD4Tem.tsv` - Table of significant isoform switches
+## Subset Analysis
 
 ### Key Processing Steps:
 
@@ -141,7 +121,7 @@ Rscript subset_pip.r
 
 ---
 
-## Step 4: Differential Splicing Analysis
+## Differential Splicing Analysis
 
 ### Script: `SUPPA.sh`
 
@@ -173,25 +153,6 @@ bash SUPPA.sh
 4. Filters out results with 'nan' values while preserving header
 
 ---
-
-## Complete Pipeline Example
-
-```bash
-# Step 1: Preprocess data
-python preprocess.py
-
-# Step 2: Assign metacells
-python metacell.py
-
-# Step 3A: Run full differential transcript usage analysis
-Rscript Differential_Transcript_Usage.r
-
-# Step 3B: Alternatively, run subset analysis for specific cell type
-Rscript subset_pip.r
-
-# Step 4: Perform differential splicing analysis
-bash SUPPA.sh
-```
 
 ## Required External Tools and Dependencies
 
