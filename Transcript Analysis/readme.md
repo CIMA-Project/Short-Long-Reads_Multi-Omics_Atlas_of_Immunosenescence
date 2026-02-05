@@ -117,7 +117,7 @@ Rscript Differential_Transcript_Usage.r
 3. Clusters cells and runs UMAP visualization
 4. Aggregates isoform counts by sample and cluster
 5. Runs differential usage analysis using satuRn statistical test
-6. Filters significant isoform switches (q-value < 1, |dIF| ≥ 0.1)
+6. Filters significant isoform switches (|dIF| ≥ 0.1)
 
 ---
 
