@@ -115,11 +115,3 @@ done < "${WORK_DIR}/file_list.txt"
 rm "${WORK_DIR}/file_list.txt"
 echo "合并成功！共处理 $count 个样本。"
 echo "最终文件: $MERGED_FILE"
-
-csv_files <- list.files(
-  path = "/media/AnalysisDisk2/Lifupeng/Lifupeng/ALSM/BCR/Immcantation/data/", 
-  pattern = "\\.tsv$",      
-  full.names = TRUE        
-)
-
-data <- read.table("/media/AnalysisDisk2/Lifupeng/Lifupeng/ALSM/BCR/Immcantation/heavy_parse-select.tsv", header = TRUE, sep = "\t")
