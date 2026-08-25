@@ -19,3 +19,7 @@ All third-party software copyrights remain the property of their original author
 This software is intended for research and educational purposes only and may not be used for commercial purposes without authorization.
 
 Date: Feb. 2026
+
+---
+
+Our paper was published in SCIENCE CHINA Life Sciences on 2 Jul, 2026 (https://www.sciengine.com/SCLS/doi/10.1007/s11427-025-3398-8)!
